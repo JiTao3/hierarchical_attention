@@ -1,0 +1,6 @@
+Aggregate  (cost=70373.75..70373.76 rows=1 width=0) (actual time=2971.989..2971.989 rows=1 loops=1)
+  ->  Seq Scan on title t  (cost=0.00..67604.59 rows=1107667 width=0) (actual time=0.019..2830.877 rows=1107925 loops=1)
+        Filter: (production_year > 2004)
+        Rows Removed by Filter: 1420387
+Planning time: 0.270 ms
+Execution time: 2972.071 ms

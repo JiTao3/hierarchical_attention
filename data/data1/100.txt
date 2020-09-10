@@ -1,0 +1,8 @@
+Hash Join  (cost=129928.86..354355.02 rows=4523930 width=106) (actual time=837.917..3536.970 rows=4523930 loops=1)
+  Hash Cond: (mk.movie_id = t.id)
+  ->  Seq Scan on movie_keyword mk  (cost=0.00..69693.30 rows=4523930 width=12) (actual time=0.014..391.470 rows=4523930 loops=1)
+  ->  Hash  (cost=61283.27..61283.27 rows=2528527 width=94) (actual time=837.437..837.437 rows=2528312 loops=1)
+        Buckets: 32768  Batches: 128  Memory Usage: 2470kB
+        ->  Seq Scan on title t  (cost=0.00..61283.27 rows=2528527 width=94) (actual time=0.012..305.178 rows=2528312 loops=1)
+Planning time: 0.553 ms
+Execution time: 3669.277 ms

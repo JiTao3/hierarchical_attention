@@ -1,0 +1,6 @@
+Aggregate  (cost=85687.60..85687.61 rows=1 width=0) (actual time=728.092..728.092 rows=1 loops=1)
+  ->  Seq Scan on movie_keyword mk  (cost=0.00..81003.12 rows=1873789 width=0) (actual time=0.020..603.792 rows=1881093 loops=1)
+        Filter: (keyword_id < 3219)
+        Rows Removed by Filter: 2642837
+Planning time: 0.205 ms
+Execution time: 728.133 ms

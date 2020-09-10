@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "/home/jitao/anaconda3/bin/python",
+    "python.autoComplete.extraPaths": [
+        "./",
+        // "./util"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": false,
+    "python.linting.banditEnabled": false,
+    "python.linting.mypyEnabled": false,
+    "python.linting.pycodestyleEnabled": false
+}
