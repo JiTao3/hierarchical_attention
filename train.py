@@ -5,7 +5,7 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 dataset = PlanDataset(root_dir="/data1/jitao/dataset/cardinality/deep_plan")
 dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
@@ -61,3 +61,5 @@ if __name__ == "__main__":
     result = train()
     with open("data/resutlv1.0.txt", "w") as f:
         f.write("\n".join("{} {}".format(x[0], x[1])) for x in result)
+
+    torch.save(encoder, "model_parameter/encoderv1.0.pkl")
