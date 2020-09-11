@@ -69,7 +69,7 @@ def treeInterpolation(root: Node, leaf, node):
     tree_depth = len(node_order)
     tree_width = len(leaf_order)
 
-    interpolation_vec = torch.zeros((tree_depth + 1, tree_width, feature_len), dtype=torch.float, requires_grad=True)
+    interpolation_vec = torch.zeros((tree_depth + 1, tree_width, feature_len), dtype=torch.float)
 
     for leaf_index in range(tree_width):
         interpolation_vec[tree_depth][leaf_index] = leaf[leaf_index]
@@ -117,8 +117,7 @@ def hierarchical_embeddings(root: Node, leaf_order: List, node_order: List, feat
     vertical_len = feature_len // 2
     horizontal_len = feature_len // 2
     hierarchical_emebdding_vec = torch.zeros(
-        (tree_depth + 1, tree_width, feature_len), dtype=torch.float, requires_grad=True
-    )
+        (tree_depth + 1, tree_width, feature_len), dtype=torch.float)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth):
             node = node_order[node_index]
@@ -135,7 +134,7 @@ def hierarchical_embeddings(root: Node, leaf_order: List, node_order: List, feat
 
 def upward_ca(interpolation_vec):
     tree_depth, tree_width, feature_len = interpolation_vec.shape
-    upward_ca_vec = torch.zeros((tree_depth - 1, tree_width, feature_len), dtype=torch.float, requires_grad=True)
+    upward_ca_vec = torch.zeros((tree_depth - 1, tree_width, feature_len), dtype=torch.float)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth - 1):
             if interpolation_vec[node_index][leaf_index].detach().numpy().any():
@@ -147,7 +146,7 @@ def upward_ca(interpolation_vec):
                         # if(torch.is_nonzero(interpolation_vec[in_node_index][leaf_index])):
                         upward_ca_vec[node_index][leaf_index] += interpolation_vec[in_node_index][leaf_index]
                         num_not_null += 1
-                print(num_not_null)
+                # print(num_not_null)
                 upward_ca_vec[node_index][leaf_index] /= num_not_null
     # test_upward(upward_ca_vec)
     return upward_ca_vec
@@ -192,7 +191,7 @@ def tree2NodeLeafmat(root: Node):
     node_mat = np.array([node.data for node in node_order], dtype=np.float)
     leaf_mat = np.array([leaf.data for leaf in leaf_order], dtype=np.float)
     nodemat, leafmat = (torch.from_numpy(node_mat).float(), torch.from_numpy(leaf_mat).float())
-    return node_mat, leaf_mat
+    return nodemat, leafmat
 
 
 if __name__ == "__main__":

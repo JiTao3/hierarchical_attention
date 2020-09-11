@@ -1,13 +1,15 @@
 {
-    "python.pythonPath": "/home/jitao/anaconda3/bin/python",
+    "python.pythonPath": "/data1/jitao/anaconda3/envs/pytorch/bin/python",
     "python.autoComplete.extraPaths": [
         "./",
-        // "./util"
+        "./util",
+        "/home/jitao/hierarchical_attentio",
     ],
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.flake8Enabled": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
     "python.linting.banditEnabled": false,
     "python.linting.mypyEnabled": false,
-    "python.linting.pycodestyleEnabled": false
+    "python.linting.pycodestyleEnabled": false,
+    "python.formatting.provider": "autopep8"
 }

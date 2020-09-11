@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.getcwd()))
-print(sys.path)
+# print(sys.path)
 
 from util.plan_to_tree import Node, parse_dep_tree_text
 from util.prase_tree2node_leaf import treeInterpolation, upward_ca, tree2NodeLeafmat
@@ -96,9 +96,7 @@ class WeightedAggregation(nn.Module):
         # no_zero_shape =
         no_zero = torch.from_numpy(no_zero)
 
-        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(
-            no_zero, 1
-        )
+        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(no_zero, 1).float()
 
         return weighted_aggregation_vec
 
@@ -222,9 +220,6 @@ if __name__ == "__main__":
     test_tree = plan_tree[1]
     nodemat, leafmat = tree2NodeLeafmat(test_tree)
     print(nodemat.shape, leafmat.shape)
-    nodemat, leafmat = (
-        torch.from_numpy(nodemat).float(),
-        torch.from_numpy(leafmat).float(),
-    )
+
     x = encoder(test_tree, nodemat, leafmat)
     print(x)

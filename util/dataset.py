@@ -33,9 +33,7 @@ class PlanDataset(Dataset):
         tree, label = tree_feature_label(self.planTrees[idx])
         nodeamt, leafmat = tree2NodeLeafmat(tree)
 
-        if self.transform:
-            sample = self.transform(sample)
-        return (tree, nodeamt, leafmat, label)
+        return (tree, nodeamt, leafmat, torch.tensor(label))
 
 
 def remove_signle_tree(root_dir, target_dir):
@@ -57,4 +55,3 @@ if __name__ == "__main__":
     )
     # pass
     # data = PlanDataset(root_dir="data/data2")
-

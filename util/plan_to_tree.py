@@ -106,6 +106,8 @@ def extract_attributes(operator, line, feature_vec, i=None):
 
 
 """Tree node class"""
+
+
 class Node(object):
     def __init__(self, data, parent=None, index=-1):
         self.data = data
@@ -152,7 +154,7 @@ def parse_dep_tree_text(folder_name="data"):
                     lines[0]
                 )
                 j = 1
-            feature_vec[feature_len - 7 : feature_len] = [
+            feature_vec[feature_len - 7: feature_len] = [
                 start_cost,
                 end_cost,
                 rows,
@@ -202,7 +204,7 @@ def parse_dep_tree_text(folder_name="data"):
                         start_cost, end_cost, rows, width, a_start_cost, a_end_cost, a_rows = extract_time(
                             line_copy
                         )
-                        feature_vec[feature_len - 7 : feature_len] = [
+                        feature_vec[feature_len - 7: feature_len] = [
                             start_cost,
                             end_cost,
                             rows,
@@ -240,7 +242,7 @@ def parse_dep_tree_text(folder_name="data"):
                         start_cost, end_cost, rows, width, a_start_cost, a_end_cost, a_rows = extract_time(
                             line_copy
                         )
-                        feature_vec[feature_len - 7 : feature_len] = [
+                        feature_vec[feature_len - 7: feature_len] = [
                             start_cost,
                             end_cost,
                             rows,
@@ -298,7 +300,7 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                     lines[0]
                 )
                 j = 1
-            feature_vec[feature_len - 7 : feature_len] = [
+            feature_vec[feature_len - 7: feature_len] = [
                 start_cost,
                 end_cost,
                 rows,
@@ -348,7 +350,7 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         start_cost, end_cost, rows, width, a_start_cost, a_end_cost, a_rows = extract_time(
                             line_copy
                         )
-                        feature_vec[feature_len - 7 : feature_len] = [
+                        feature_vec[feature_len - 7: feature_len] = [
                             start_cost,
                             end_cost,
                             rows,
@@ -369,8 +371,7 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         else:
                             j = 0
                             while (
-                                "actual" not in lines[i + j]
-                                and "Plan" not in lines[i + j]
+                                "actual" not in lines[i + j] and "Plan" not in lines[i + j]
                             ):
                                 extract_attributes(operator, lines[i + j], feature_vec)
                                 j += 1
@@ -388,7 +389,7 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         start_cost, end_cost, rows, width, a_start_cost, a_end_cost, a_rows = extract_time(
                             line_copy
                         )
-                        feature_vec[feature_len - 7 : feature_len] = [
+                        feature_vec[feature_len - 7: feature_len] = [
                             start_cost,
                             end_cost,
                             rows,
@@ -408,8 +409,7 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         else:
                             j = 0
                             while (
-                                "actual" not in lines[i + j]
-                                and "Plan" not in lines[i + j]
+                                "actual" not in lines[i + j] and "Plan" not in lines[i + j]
                             ):
                                 extract_attributes(operator, lines[i + j], feature_vec)
                                 j += 1
@@ -445,23 +445,26 @@ def p2t(node):
     tree["labels"] = np.log(node.data[-2])  # cost
     tree["pg"] = np.log(node.data[-6])
 
-
     tree["children"] = []
     for children in node.children:
         tree["children"].append(p2t(children))
     return tree
 
-def tree_feature_label(root:Node):
+
+def tree_feature_label(root: Node):
     label = root.data[-1]
     operators_count = 9
     columns_count = 6
     scan_features = 64
     feature_len = operators_count + columns_count + scan_features
-    def feature(root:Node):
+
+    def feature(root: Node):
         root.data = root.data[:feature_len]
         if root.children:
             for child in root.children:
                 feature(child)
+
+    feature(root)
     return root, np.log(label)
 
 
