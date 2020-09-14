@@ -124,11 +124,8 @@ class Node(object):
     def __str__(self, tabs=0):
         tab_spaces = str.join("", [" " for i in range(tabs)])
         return (
-            tab_spaces
-            + "+-- Node: "
-            + str.join("|", self.data)
-            + "\n"
-            + str.join("\n", [child.__str__(tabs + 2) for child in self.children])
+            tab_spaces + "+-- Node: " + str.join("|", self.data) + "\n" +
+            str.join("\n", [child.__str__(tabs + 2) for child in self.children])
         )
 
 
@@ -223,8 +220,7 @@ def parse_dep_tree_text(folder_name="data"):
                         else:
                             j = 0
                             while (
-                                "actual" not in lines[i + j]
-                                and "Plan" not in lines[i + j]
+                                "actual" not in lines[i + j] and "Plan" not in lines[i + j]
                             ):
                                 extract_attributes(operator, lines[i + j], feature_vec)
                                 j += 1
@@ -261,8 +257,7 @@ def parse_dep_tree_text(folder_name="data"):
                         else:
                             j = 0
                             while (
-                                "actual" not in lines[i + j]
-                                and "Plan" not in lines[i + j]
+                                "actual" not in lines[i + j] and "Plan" not in lines[i + j]
                             ):
                                 extract_attributes(operator, lines[i + j], feature_vec)
                                 j += 1
@@ -363,7 +358,8 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         feature_vec[operators.index(operator)] = 1.0
                         if operator == "Seq Scan":
 
-                            # if(operator == "Seq Scan" or operator == "Index Only Scan using title_pkey on title t" or operator=='Index Scan using title_pkey on title t'):
+                            # if(operator == "Seq Scan" or operator == "Index Only Scan using title_pkey on title t"
+                            # or operator=='Index Scan using title_pkey on title t'):
                             extract_attributes(
                                 operator, line_copy, feature_vec, scan_cnt
                             )
@@ -401,7 +397,8 @@ def parse_dep_tree_text_lb_ub(folder_name="data/"):
                         operator, in_operators = extract_operator(line_copy)
                         feature_vec[operators.index(operator)] = 1.0
                         if operator == "Seq Scan":
-                            # if(operator == "Seq Scan" or operator == "Index Only Scan using title_pkey on title t" or operator=='Index Scan using title_pkey on title t'):
+                            # if(operator == "Seq Scan" or operator == "Index Only Scan using title_pkey on title t" or
+                            # operator=='Index Scan using title_pkey on title t'):
                             extract_attributes(
                                 operator, line_copy, feature_vec, scan_cnt
                             )
