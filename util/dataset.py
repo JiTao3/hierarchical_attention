@@ -31,9 +31,9 @@ class PlanDataset(Dataset):
             idx = idx.tolist()
         # root + label
         tree, label = tree_feature_label(self.planTrees[idx])
-        nodeamt, leafmat = tree2NodeLeafmat(tree)
+        nodemat, leafmat = tree2NodeLeafmat(tree)
 
-        return (tree, nodeamt, leafmat, torch.tensor(label))
+        return (tree, nodemat, leafmat, torch.tensor(label).reshape((1)))
 
 
 def remove_signle_tree(root_dir, target_dir):
@@ -47,11 +47,21 @@ def remove_signle_tree(root_dir, target_dir):
                 write_f.writelines(lines)
 
 
+def test_label():
+    dataset = PlanDataset(root_dir="/data1/jitao/dataset/cardinality/deep_plan")
+    for i, data in enumerate(dataset):
+        tree, nodemat, leafmat, label = data
+        print(label.shape)
+        if np.isnan(label.numpy()):
+            print("nan:", i)
+
+
 if __name__ == "__main__":
-    remove_signle_tree(
-        # root_dir="/data1/jitao/dataset/cardinality/all_plan",
-        root_dir="/data1/slm/datasets/JOB/synthetic",
-        target_dir="/data1/jitao/dataset/cardinality/deep_plan",
-    )
+    # remove_signle_tree(
+    #     # root_dir="/data1/jitao/dataset/cardinality/all_plan",
+    #     root_dir="/data1/slm/datasets/JOB/synthetic",
+    #     target_dir="/data1/jitao/dataset/cardinality/deep_plan",
+    # )
     # pass
     # data = PlanDataset(root_dir="data/data2")
+    test_label()

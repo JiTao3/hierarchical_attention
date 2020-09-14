@@ -1,3 +1,4 @@
 *.npy
 /.vscode
 *.pkl
+*.txt

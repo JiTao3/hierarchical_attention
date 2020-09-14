@@ -1,3 +1,4 @@
+import math
 from model.encoder import Encoder
 from util.dataset import PlanDataset
 import torch
@@ -27,6 +28,7 @@ epoch_size = 10
 
 
 def train():
+    result = []
     for epoch in range(epoch_size):
         print("epoch : ", epoch)
         running_loss = 0.0
@@ -34,15 +36,18 @@ def train():
             tree, nodemat, leafmat, label = data
             optimizer.zero_grad()
             output = encoder(tree, nodemat, leafmat)
+            output = torch.reshape(output, (1))
             loss = criterion(output, label)
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item()
+            if math.isnan(running_loss):
+                print("nan: ", i, "\t", running_loss)
+
             if i % 200 == 0 and i != 0:
-                print("[%d, %5d] loss: %4d" % (epoch + 1, i + 1, loss / 200))
+                print("[%d, %5d] loss: %4f" % (epoch + 1, i + 1, loss / 200))
                 running_loss = 0.0
-        result = []
         test_loss = 0.0
         with torch.no_grad():
             for i, data in enumerate(test_dataset):
@@ -52,14 +57,15 @@ def train():
                     result.append((label, test_output))
                 loss = criterion(test_output, label)
                 test_loss += loss.item()
-                print("test loss: ", test_loss / test_size)
-        return result
+                if i % 200 == 0 and i != 0:
+                    print("test loss: ", test_loss / test_size)
+    return result
 
 
 if __name__ == "__main__":
-    print(device)
     result = train()
+    # result = [(1.1, 2.2), (3.3, 4.4), (5.5, 6.6)]
     with open("data/resutlv1.0.txt", "w") as f:
-        f.write("\n".join("{} {}".format(x[0], x[1])) for x in result)
+        f.write("\n".join("{} {}".format(x[0], x[1]) for x in result))
 
     torch.save(encoder, "model_parameter/encoderv1.0.pkl")
