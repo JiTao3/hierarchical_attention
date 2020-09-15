@@ -14,17 +14,21 @@ dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
 train_size = int(len(dataset) * 0.9)
 test_size = len(dataset) - train_size
 
+
+# train_temp = [dataset[i] for i in range(10)]
+# test_temp = [dataset[i] for i in range(5)]
+
 train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=2)
-test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
+# train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=2)
+# test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
 encoder = Encoder(d_feature=9 + 6 + 64, d_model=512, d_ff=512, N=6)
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(encoder.parameters(), lr=0.001, momentum=0.9)
+optimizer = optim.SGD(encoder.parameters(), lr=0.0001, momentum=0.9)
 
 
-epoch_size = 10
+epoch_size = 2
 
 
 def train():
@@ -36,7 +40,7 @@ def train():
             tree, nodemat, leafmat, label = data
             optimizer.zero_grad()
             output = encoder(tree, nodemat, leafmat)
-            output = torch.reshape(output, (1))
+            output = output.squeeze(-1)
             loss = criterion(output, label)
             loss.backward()
             optimizer.step()
@@ -46,7 +50,7 @@ def train():
                 print("nan: ", i, "\t", running_loss)
 
             if i % 200 == 0 and i != 0:
-                print("[%d, %5d] loss: %4f" % (epoch + 1, i + 1, loss / 200))
+                print("[%d, %5d] loss: %4f" % (epoch + 1, i + 1, running_loss / 200))
                 running_loss = 0.0
         test_loss = 0.0
         with torch.no_grad():
@@ -62,10 +66,17 @@ def train():
     return result
 
 
+def dataset_test():
+    for i, data in enumerate(test_dataset):
+        tree, nodemat, leafmat, label = data
+        print(label)
+
+
 if __name__ == "__main__":
     result = train()
     # result = [(1.1, 2.2), (3.3, 4.4), (5.5, 6.6)]
     with open("data/resutlv1.0.txt", "w") as f:
         f.write("\n".join("{} {}".format(x[0], x[1]) for x in result))
 
-    torch.save(encoder, "model_parameter/encoderv1.0.pkl")
+    # torch.save(encoder, "model_parameter/encoderv1.0.pkl")
+    # dataset_test()

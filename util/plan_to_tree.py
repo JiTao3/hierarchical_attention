@@ -462,7 +462,7 @@ def tree_feature_label(root: Node):
                 feature(child)
 
     feature(root)
-    return root, np.log(label)
+    return root, np.log(label) if label > 1 else label
 
 
 if __name__ == "__main__":
