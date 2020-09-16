@@ -6,9 +6,6 @@ import torch
 
 from util.plan_to_tree import Node, parse_dep_tree_text
 
-index = 1
-FEATURE_LEN = 9 + 6 + 7 + 64
-
 
 def add_node_index(root: Node) -> Node:
     # add an index tu the tree to identify a node uniquely
@@ -16,7 +13,7 @@ def add_node_index(root: Node) -> Node:
     index = 1
 
     def add_index(root: Node):
-        global index
+        nonlocal index
         if not root:
             return -1
 

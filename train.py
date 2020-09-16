@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, random_split
 dataset = PlanDataset(root_dir="data/deep_plan")
 dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
 
-train_size = int(len(dataset) * 0.9)
+train_size = int(len(dataset) * 0.8)
 test_size = len(dataset) - train_size
 
 
@@ -22,13 +22,13 @@ train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 # train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=2)
 # test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
-encoder = Encoder(d_feature=9 + 6 + 64, d_model=512, d_ff=512, N=6).double()
+encoder = Encoder(d_feature=9 + 6 + 64, d_model=128, d_ff=128, N=2).double()
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(encoder.parameters(), lr=0.0001, momentum=0.9)
+optimizer = optim.Adam(encoder.parameters(), lr=0.001)
 
 
-epoch_size = 1
+epoch_size = 2
 
 
 def train():
@@ -40,7 +40,7 @@ def train():
             tree, nodemat, leafmat, label = data
             optimizer.zero_grad()
             output = encoder(tree, nodemat.double(), leafmat.double())
-            output = output.reshape((1))
+            # output = output
             if len(output.shape) > 1 or len(label.shape) > 1:
                 print("output: {} ,label: {}".format(len(output.shape), len(label.shape)))
             loss = criterion(output, label)
@@ -77,7 +77,7 @@ def dataset_test():
 if __name__ == "__main__":
     result = train()
     # result = [(1.1, 2.2), (3.3, 4.4), (5.5, 6.6)]
-    with open("data/resutlv1.0-e1.txt", "w") as f:
+    with open("data/dmodel128/resutlv1.0-e2-N2-lr0.001.txt", "w") as f:
         f.write("\n".join("{} {}".format(x[0].item(), x[1].item()) for x in result))
 
     # torch.save(encoder, "model_parameter/encoderv1.0.pkl")

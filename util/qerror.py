@@ -20,5 +20,3 @@ def print_qerror(q_error: List):
     print("90th qerror: {:.4f}".format(np.percentile(q_error, 90)))
     print("95th qerror: {:.4f}".format(np.percentile(q_error, 95)))
     print("99th qerror: {:.4f}".format(np.percentile(q_error, 99)))
-
-

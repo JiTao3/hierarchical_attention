@@ -12,6 +12,7 @@ sys.path.append(os.path.abspath(os.getcwd()))
 
 from util.plan_to_tree import Node, parse_dep_tree_text
 from util.prase_tree2node_leaf import treeInterpolation, upward_ca, tree2NodeLeafmat
+from util.dataset import PlanDataset
 
 
 def clones(module, N):
@@ -21,8 +22,8 @@ def clones(module, N):
 class LayerNorm(nn.Module):
     def __init__(self, feature, eps=1e-6):
         super(LayerNorm, self).__init__()
-        self.a_2 = nn.Parameter(torch.ones(feature))
-        self.b_2 = nn.Parameter(torch.zeros(feature))
+        self.a_2 = nn.Parameter(torch.ones(feature), requires_grad=True)
+        self.b_2 = nn.Parameter(torch.zeros(feature), requires_grad=True)
         self.eps = eps
 
     def forward(self, x):
@@ -37,7 +38,7 @@ def attention(query, key, mask=None, dropout=None):
     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
     if mask is not None:
         scores = scores.masked_fill(mask == 0, -1e9)
-    p_attn = F.softmax(scores, dim=-1)
+    p_attn = scores
     if dropout is not None:
         p_attn = dropout(p_attn)
     return p_attn
@@ -77,8 +78,9 @@ class WeightedAggregation(nn.Module):
     def __init__(self, d_feature):
         super(WeightedAggregation, self).__init__()
         # !!!
-        self.u_s = nn.Parameter(torch.randn(d_feature, requires_grad=True))
+        self.u_s = nn.Parameter(torch.ones(d_feature, requires_grad=True))
         self.register_parameter("U_s", self.u_s)
+        self.d_featuer = d_feature
 
     def forward(self, leaf, upward_ca_vec):
         # omega size leaf * d
@@ -90,9 +92,9 @@ class WeightedAggregation(nn.Module):
         # weight_aggregation_vec shape is node*leaf*d
         weighted_aggregation_vec = torch.sum(weighted_aggregation_vec, dim=1)
         # weight_aggregation_vec shape is node*d
-        no_zero = 1 / (
-            np.count_nonzero(upward_ca_vec.detach().numpy(), axis=(1, 2)) + 1e-6
-        )
+
+        nozero_div = (np.count_nonzero(upward_ca_vec.detach().numpy(), axis=(1, 2)) + 1e-6) / self.d_featuer
+        no_zero = 1 / nozero_div
         # no_zero_shape =
         no_zero = torch.from_numpy(no_zero)
 
@@ -191,13 +193,9 @@ class Encoder(nn.Module):
             EncoderLayer(d_feature=d_model, d_model=d_model, d_ff=d_ff), N=N
         )
         self.forward_net = nn.Sequential(
-            nn.Linear(d_model, d_model // 2),
+            nn.Linear(d_model, d_model // 4),
             nn.ReLU(),
-            nn.Linear(d_model // 2, d_model // 4),
-            nn.ReLU(),
-            nn.Linear(d_model // 4, d_model // 8),
-            nn.ReLU(),
-            nn.Linear(d_model // 8, 1),
+            nn.Linear(d_model // 4, 1),
         )
 
     def forward(self, root, node, leaf):
@@ -211,15 +209,15 @@ class Encoder(nn.Module):
         # max pool
         x = torch.max(x, dim=-2, keepdim=True)[0]
         x = self.forward_net(x)
-        return x
+        return x.squeeze(-1)
 
 
 if __name__ == "__main__":
-    encoder = Encoder(d_feature=9 + 6 + 7 + 64, d_model=512, d_ff=512, N=6)
-    plan_tree, max_children = parse_dep_tree_text(folder_name="./data/data1")
-    test_tree = plan_tree[1]
-    nodemat, leafmat = tree2NodeLeafmat(test_tree)
+    encoder = Encoder(d_feature=9 + 6 + 64, d_model=512, d_ff=512, N=2).double()
+    dataset = PlanDataset(root_dir="data/deep_plan")
+
+    tree, nodemat, leafmat, label = dataset[0]
     print(nodemat.shape, leafmat.shape)
 
-    x = encoder(test_tree, nodemat, leafmat)
+    x = encoder(tree, nodemat.double(), leafmat.double())
     print(x)
