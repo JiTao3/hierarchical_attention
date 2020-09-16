@@ -69,7 +69,7 @@ def treeInterpolation(root: Node, leaf, node):
     tree_depth = len(node_order)
     tree_width = len(leaf_order)
 
-    interpolation_vec = torch.zeros((tree_depth + 1, tree_width, feature_len), dtype=torch.float)
+    interpolation_vec = torch.zeros((tree_depth + 1, tree_width, feature_len), dtype=torch.double)
 
     for leaf_index in range(tree_width):
         interpolation_vec[tree_depth][leaf_index] = leaf[leaf_index]
@@ -117,7 +117,7 @@ def hierarchical_embeddings(root: Node, leaf_order: List, node_order: List, feat
     vertical_len = feature_len // 2
     horizontal_len = feature_len // 2
     hierarchical_emebdding_vec = torch.zeros(
-        (tree_depth + 1, tree_width, feature_len), dtype=torch.float)
+        (tree_depth + 1, tree_width, feature_len), dtype=torch.double)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth):
             node = node_order[node_index]
@@ -134,7 +134,7 @@ def hierarchical_embeddings(root: Node, leaf_order: List, node_order: List, feat
 
 def upward_ca(interpolation_vec):
     tree_depth, tree_width, feature_len = interpolation_vec.shape
-    upward_ca_vec = torch.zeros((tree_depth - 1, tree_width, feature_len), dtype=torch.float)
+    upward_ca_vec = torch.zeros((tree_depth - 1, tree_width, feature_len), dtype=torch.double)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth - 1):
             if interpolation_vec[node_index][leaf_index].detach().numpy().any():
@@ -171,7 +171,7 @@ def test_interpolation():
     tree_depth = len(node_order)
     tree_width = len(leaf_order)
     print(tree_depth, tree_width)
-    test_interpolation = np.zeros((tree_depth, tree_width), dtype=np.float)
+    test_interpolation = np.zeros((tree_depth, tree_width), dtype=np.double)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth):
             if is_ancestor(leaf=leaf_order[leaf_index], node=node_order[node_index]):
@@ -188,9 +188,9 @@ def tree2NodeLeafmat(root: Node):
     global FEATURE_LEN
 
     leaf_order, node_order = parse_tree2leaves_node(root)
-    node_mat = np.array([node.data for node in node_order], dtype=np.float)
-    leaf_mat = np.array([leaf.data for leaf in leaf_order], dtype=np.float)
-    nodemat, leafmat = (torch.from_numpy(node_mat).float(), torch.from_numpy(leaf_mat).float())
+    node_mat = np.array([node.data for node in node_order], dtype=np.double)
+    leaf_mat = np.array([leaf.data for leaf in leaf_order], dtype=np.double)
+    nodemat, leafmat = (torch.from_numpy(node_mat).double(), torch.from_numpy(leaf_mat).double())
     return nodemat, leafmat
 
 

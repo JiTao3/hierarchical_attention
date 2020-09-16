@@ -96,7 +96,7 @@ class WeightedAggregation(nn.Module):
         # no_zero_shape =
         no_zero = torch.from_numpy(no_zero)
 
-        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(no_zero, 1).float()
+        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(no_zero, 1)
 
         return weighted_aggregation_vec
 
@@ -139,11 +139,11 @@ class TreeAttention(nn.Module):
         # leafnodehat = torch.cat((node_hat.float(), leaf_hat),dim=-2)
         Attn = torch.matmul(
             F.softmax(torch.cat((Ann, Anl), dim=-1), dim=-2),
-            torch.cat((node_hat.float(), leaf_hat), dim=-2),
+            torch.cat((node_hat, leaf_hat), dim=-2),
         )
         Attl = torch.matmul(
             F.softmax(torch.cat((Aln, All), dim=-1), dim=-2),
-            torch.cat((node_hat.float(), leaf_hat), dim=-2),
+            torch.cat((node_hat, leaf_hat), dim=-2),
         )
         return Attn, Attl
 

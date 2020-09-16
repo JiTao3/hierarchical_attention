@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/data1/jitao/anaconda3/envs/pytorch/bin/python",
+    "python.pythonPath": "/home/jitao/anaconda3/envs/pytorch/bin/python",
     "python.autoComplete.extraPaths": [
         "./",
         "./util",

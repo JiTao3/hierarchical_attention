@@ -1,8 +1,0 @@
-nohup: ignoring input
-epoch :  0
-Traceback (most recent call last):
-  File "train.py", line 66, in <module>
-    result = train()
-  File "train.py", line 39, in train
-    output = torch.reshape(output, (1))
-TypeError: reshape(): argument 'shape' (position 2) must be tuple of ints, not int

@@ -83,7 +83,7 @@ class DecoderAttention(nn.Module):
         # !!!! dim
         Attq = F.softmax(
             torch.matmul(
-                torch.cat(Aqn, Aql), torch.cat(node_hat.float(), leaf_hat, dim=-2)
+                torch.cat(Aqn, Aql), torch.cat(node_hat.double(), leaf_hat, dim=-2)
             )
         )
         return Attq

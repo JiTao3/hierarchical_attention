@@ -34,7 +34,7 @@ class PlanDataset(Dataset):
         tree, label = self.trees_labels[idx]
         nodemat, leafmat = tree2NodeLeafmat(tree)
 
-        return (tree, nodemat, leafmat, torch.tensor(label).reshape((1)))
+        return (tree, nodemat, leafmat, torch.tensor(label, dtype=torch.double).reshape((1)))
 
 
 def remove_signle_tree(root_dir, target_dir):
@@ -49,7 +49,7 @@ def remove_signle_tree(root_dir, target_dir):
 
 
 def test_label():
-    dataset = PlanDataset(root_dir="/data1/jitao/dataset/cardinality/deep_plan")
+    dataset = PlanDataset(root_dir="/home/jitao/hierarchical_attention/data/deep_plan")
     for i, data in enumerate(dataset):
         tree, nodemat, leafmat, label = data
         # print(label.shape)

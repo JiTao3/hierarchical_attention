@@ -2,3 +2,5 @@
 /.vscode
 *.pkl
 *.txt
+/data
+/.git
