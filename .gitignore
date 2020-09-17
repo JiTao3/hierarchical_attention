@@ -4,3 +4,4 @@
 *.txt
 /data
 /.git
+/model_parameter
