@@ -20,7 +20,7 @@ columns = [
     "mc.movie_id",
     "mk.movie_id",
 ]
-scan_features = np.load("./model_parameter/test_scan_features_64.npy")
+scan_features = np.load("/home/jitao/hierarchical_attention/model_parameter/test_scan_features_64.npy")
 
 
 def extract_time(line):
@@ -467,7 +467,7 @@ def tree_feature_label(root: Node):
 
 if __name__ == "__main__":
     print(os.path.abspath("."))
-    plan_tree, max_children = parse_dep_tree_text(folder_name="./data")
+    plan_tree, max_children = parse_dep_tree_text(folder_name="./data/deep_plan")
     # add_node_index(plan_tree[1])
     # leaf,node = test(plan_tree[1])
 

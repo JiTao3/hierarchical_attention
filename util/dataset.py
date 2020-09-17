@@ -61,11 +61,11 @@ def test_label():
 
 
 if __name__ == "__main__":
-    # remove_signle_tree(
-    #     # root_dir="/data1/jitao/dataset/cardinality/all_plan",
-    #     root_dir="/data1/slm/datasets/JOB/synthetic",
-    #     target_dir="/data1/jitao/dataset/cardinality/deep_plan",
-    # )
+    remove_signle_tree(
+        # root_dir="/data1/jitao/dataset/cardinality/all_plan",
+        root_dir="/home/jitao/hierarchical_attention/data/cardinality",
+        target_dir="/home/jitao/hierarchical_attention/data/deep_cardinality",
+    )
     # pass
     # data = PlanDataset(root_dir="data/data2")
-    test_label()
+    # test_label()

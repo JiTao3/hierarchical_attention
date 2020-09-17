@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.getcwd()))
 from util.qerror import cal_q_error, print_qerror
 
 
-with open("data/resutlv1.0-e1.txt", 'r') as f:
+with open("/home/jitao/hierarchical_attention/data/dmodel512/resutlv1.0-e10-N4-lr0.001.txt", 'r') as f:
     lines = f.readlines()
     label_output = [line.split(' ') for line in lines]
     label = [float(label) for label, _ in label_output]

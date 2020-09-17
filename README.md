@@ -11,6 +11,7 @@ We use it in the database to perdict the cost of a plan and cardinality of the q
 
 ## Experiment
 
-| version | parpmeter                                                      | result |
-| ------- | -------------------------------------------------------------- | ------ |
-| v1.0    | d_feature=9 + 6 + 64, d_model=512,<br> d_ff=512, N=6, lr=0.001 |        |
+| version | parpmeter                                          | result                                                                                                                                                      |
+| ------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v1.0    | d_model=128,<br> d_ff=128, N=2, lr=0.001, epoch=10 | max qerror: 662924.5300 <br> mean qerror: 1018.3936 <br> media qerror: 3.1462<br> 90th qerror: 23.3711 <br> 95th qerror: 51.8297 <br> 99th qerror: 756.4599 |
+| v1.1    | d_model=521,dff=128, N=2, lr=0.001, epoch=10       |max qerror: 892079.6152 <br> mean qerror: 2151.0649 <br> media qerror: 3.1404 <br> 90th qerror: 31.9187 <br> 95th qerror: 72.9243 <br> 99th qerror: 2229.1361|

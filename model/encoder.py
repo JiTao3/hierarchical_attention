@@ -16,7 +16,10 @@ from util.dataset import PlanDataset
 
 
 def clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+    if N <= 0:
+        return []
+    else:
+        return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
 class LayerNorm(nn.Module):
@@ -167,6 +170,7 @@ class EncoderLayer(nn.Module):
         # Wo
         # !!! d
         self.linear = nn.Linear(d_model, d_model)
+        self.reshape = Reshape(d_feature, d_model)
         self.norm1 = LayerNorm(d_model)
         self.norm2 = LayerNorm(d_model)
         self.feed_forward = nn.Sequential(
@@ -176,8 +180,8 @@ class EncoderLayer(nn.Module):
     def forward(self, root, node, leaf):
         Attn, Attl = self.treeattn(root, node, leaf)
         Attno, Attlo = self.linear(Attn), self.linear(Attl)
-        node_x = node + self.norm1(Attno)
-        leaf_x = leaf + self.norm2(Attlo)
+        node_x = self.reshape(node) + self.norm1(Attno)
+        leaf_x = self.reshape(leaf) + self.norm2(Attlo)
         feed_node_x = self.feed_forward(node_x)
         feed_leaf_x = self.feed_forward(leaf_x)
         node_x = node_x + self.norm2(feed_node_x)
@@ -188,7 +192,9 @@ class EncoderLayer(nn.Module):
 class Encoder(nn.Module):
     def __init__(self, d_feature, d_model, d_ff, N):
         super(Encoder, self).__init__()
-        self.reshape = Reshape(d_feature=d_feature, d_model=d_model)
+        # self.reshape = Reshape(d_feature=d_feature, d_model=d_model)
+        self.firstEncoder = EncoderLayer(d_feature=d_feature, d_model=d_model, d_ff=d_ff)
+
         self.layers = clones(
             EncoderLayer(d_feature=d_model, d_model=d_model, d_ff=d_ff), N=N
         )
@@ -199,9 +205,9 @@ class Encoder(nn.Module):
         )
 
     def forward(self, root, node, leaf):
-        node = self.reshape(node)
-        leaf = self.reshape(leaf)
-
+        # node = self.reshape(node)
+        # leaf = self.reshape(leaf)
+        node, leaf = self.firstEncoder(root, node, leaf)
         for layer in self.layers:
             node, leaf = layer(root, node, leaf)
 

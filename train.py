@@ -5,6 +5,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
+from torchsummary import summary
 
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -22,13 +23,14 @@ train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 # train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=2)
 # test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 
-encoder = Encoder(d_feature=9 + 6 + 64, d_model=128, d_ff=128, N=2).double()
+encoder = Encoder(d_feature=9 + 6 + 64, d_model=128, d_ff=128, N=4).double()
+summary(encoder)
 
 criterion = nn.MSELoss()
 optimizer = optim.Adam(encoder.parameters(), lr=0.001)
 
 
-epoch_size = 2
+epoch_size = 10
 
 
 def train():
@@ -77,7 +79,7 @@ def dataset_test():
 if __name__ == "__main__":
     result = train()
     # result = [(1.1, 2.2), (3.3, 4.4), (5.5, 6.6)]
-    with open("data/dmodel128/resutlv1.0-e2-N2-lr0.001.txt", "w") as f:
+    with open("data/dmodel512/resutlv1.0-e10-N4-lr0.001.txt", "w") as f:
         f.write("\n".join("{} {}".format(x[0].item(), x[1].item()) for x in result))
 
     # torch.save(encoder, "model_parameter/encoderv1.0.pkl")
