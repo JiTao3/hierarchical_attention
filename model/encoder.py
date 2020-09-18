@@ -41,7 +41,7 @@ def attention(query, key, mask=None, dropout=None):
     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
     if mask is not None:
         scores = scores.masked_fill(mask == 0, -1e9)
-    p_attn = scores
+    p_attn = F.softmax(scores, dim=-1)
     if dropout is not None:
         p_attn = dropout(p_attn)
     return p_attn
@@ -109,14 +109,16 @@ class WeightedAggregation(nn.Module):
 class TreeAttention(nn.Module):
     def __init__(self, d_feature, d_model):
         super(TreeAttention, self).__init__()
-        self.linear = TreeAttentionLinear(d_feature=d_feature, d_model=d_model)
+        self.nodelinear = TreeAttentionLinear(d_feature=d_feature, d_model=d_model)
+        self.leaflinear = TreeAttentionLinear(d_feature=d_feature, d_model=d_model)
+
         self.scaledDot = TreeAttentionScaledDot(d_feature=d_feature)
         self.weightAgg = WeightedAggregation(d_feature=d_feature)
 
     def forward(self, root: Node, node, leaf):
 
-        node_q, node_k, node_v = self.linear(node)
-        leaf_q, leaf_k, leaf_v = self.linear(leaf)
+        node_q, node_k, node_v = self.nodelinear(node)
+        leaf_q, leaf_k, leaf_v = self.leaflinear(leaf)
         Anl, Ann, All, Aln = self.scaledDot(node_q, node_k, leaf_q, leaf_k)
         # !!!! node_hat = ???
 
@@ -156,7 +158,7 @@ class TreeAttention(nn.Module):
 class Reshape(nn.Module):
     def __init__(self, d_feature, d_model):
         super(Reshape, self).__init__()
-        self.reshape = nn.Linear(d_feature, d_model)
+        self.reshape = nn.Sequential(nn.Linear(d_feature, d_model), nn.ReLU())
 
     def forward(self, x):
         return self.reshape(x)
@@ -170,18 +172,18 @@ class EncoderLayer(nn.Module):
         # Wo
         # !!! d
         self.linear = nn.Linear(d_model, d_model)
-        self.reshape = Reshape(d_feature, d_model)
+        # self.reshape = Reshape(d_feature, d_model)
         self.norm1 = LayerNorm(d_model)
         self.norm2 = LayerNorm(d_model)
         self.feed_forward = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.ReLU(), nn.Linear(d_ff, d_model)
+            nn.Linear(d_model, d_ff), nn.ReLU(), nn.Linear(d_ff, d_model), nn.ReLU()
         )
 
     def forward(self, root, node, leaf):
         Attn, Attl = self.treeattn(root, node, leaf)
         Attno, Attlo = self.linear(Attn), self.linear(Attl)
-        node_x = self.reshape(node) + self.norm1(Attno)
-        leaf_x = self.reshape(leaf) + self.norm2(Attlo)
+        node_x = node + self.norm1(Attno)
+        leaf_x = leaf + self.norm2(Attlo)
         feed_node_x = self.feed_forward(node_x)
         feed_leaf_x = self.feed_forward(leaf_x)
         node_x = node_x + self.norm2(feed_node_x)
@@ -192,8 +194,8 @@ class EncoderLayer(nn.Module):
 class Encoder(nn.Module):
     def __init__(self, d_feature, d_model, d_ff, N):
         super(Encoder, self).__init__()
-        # self.reshape = Reshape(d_feature=d_feature, d_model=d_model)
-        self.firstEncoder = EncoderLayer(d_feature=d_feature, d_model=d_model, d_ff=d_ff)
+        self.reshape = Reshape(d_feature=d_feature, d_model=d_model)
+        # self.firstEncoder = EncoderLayer(d_feature=d_feature, d_model=d_model, d_ff=d_ff)
 
         self.layers = clones(
             EncoderLayer(d_feature=d_model, d_model=d_model, d_ff=d_ff), N=N
@@ -201,13 +203,16 @@ class Encoder(nn.Module):
         self.forward_net = nn.Sequential(
             nn.Linear(d_model, d_model // 4),
             nn.ReLU(),
-            nn.Linear(d_model // 4, 1),
+            nn.Linear(d_model // 4, d_model // 8),
+            nn.ReLU(),
+            nn.Linear(d_model // 8, 1),
+            nn.ReLU()
         )
 
     def forward(self, root, node, leaf):
-        # node = self.reshape(node)
-        # leaf = self.reshape(leaf)
-        node, leaf = self.firstEncoder(root, node, leaf)
+        node = self.reshape(node)
+        leaf = self.reshape(leaf)
+        # node, leaf = self.firstEncoder(root, node, leaf)
         for layer in self.layers:
             node, leaf = layer(root, node, leaf)
 
@@ -220,9 +225,9 @@ class Encoder(nn.Module):
 
 if __name__ == "__main__":
     encoder = Encoder(d_feature=9 + 6 + 64, d_model=512, d_ff=512, N=2).double()
-    dataset = PlanDataset(root_dir="data/deep_plan")
+    dataset = PlanDataset(root_dir="data/deep_cardinality")
 
-    tree, nodemat, leafmat, label = dataset[0]
+    tree, nodemat, leafmat, label = dataset[51]
     print(nodemat.shape, leafmat.shape)
 
     x = encoder(tree, nodemat.double(), leafmat.double())

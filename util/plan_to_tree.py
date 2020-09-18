@@ -20,7 +20,7 @@ columns = [
     "mc.movie_id",
     "mk.movie_id",
 ]
-scan_features = np.load("/home/jitao/hierarchical_attention/model_parameter/test_scan_features_64.npy")
+scan_features = np.load("/home/jitao/hierarchical_attention/model_parameter/featuer_deep_cardinality.npy")
 
 
 def extract_time(line):
