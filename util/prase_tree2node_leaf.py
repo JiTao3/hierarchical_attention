@@ -1,5 +1,6 @@
 from typing import List
 from collections import deque
+import copy
 
 import numpy as np
 import torch
@@ -130,16 +131,17 @@ def hierarchical_embeddings(root: Node, leaf_order: List, node_order: List, feat
 
 
 def upward_ca(interpolation_vec):
+    interpolation_vec_cp = copy.copy(interpolation_vec)
     tree_depth, tree_width, feature_len = interpolation_vec.shape
     upward_ca_vec = torch.zeros((tree_depth - 1, tree_width, feature_len), dtype=torch.double)
     for leaf_index in range(tree_width):
         for node_index in range(tree_depth - 1):
-            if interpolation_vec[node_index][leaf_index].detach().numpy().any():
+            if interpolation_vec_cp[node_index][leaf_index].detach().numpy().any():
                 # if(torch.is_nonzero(interpolation_vec[node_index][leaf_index])):
                 num_not_null = 1
                 upward_ca_vec[node_index][leaf_index] = interpolation_vec[tree_depth - 1][leaf_index]
                 for in_node_index in range(node_index, tree_depth - 1):
-                    if interpolation_vec[in_node_index][leaf_index].detach().numpy().any():
+                    if interpolation_vec_cp[in_node_index][leaf_index].detach().numpy().any():
                         # if(torch.is_nonzero(interpolation_vec[in_node_index][leaf_index])):
                         upward_ca_vec[node_index][leaf_index] += interpolation_vec[in_node_index][leaf_index]
                         num_not_null += 1
@@ -147,6 +149,21 @@ def upward_ca(interpolation_vec):
                 upward_ca_vec[node_index][leaf_index] /= num_not_null
     # test_upward(upward_ca_vec)
     return upward_ca_vec
+
+
+def weightedAggregationCoeffi(root: Node):
+    leaf_order, node_order = parse_tree2leaves_node(root=root)
+
+    tree_depth = len(node_order)
+    tree_width = len(leaf_order)
+    agg_coeffi = torch.zeros((tree_depth), dtype=torch.double)
+    agg_coeffi += torch.tensor([tree_width], dtype=torch.double)
+
+    leaves_nodes = [parse_tree2leaves_node(rot) for rot in node_order]
+    tree_size = [len(leaves) + len(nodes) for leaves, nodes in leaves_nodes]
+
+    agg_coeffi += torch.tensor(tree_size, dtype=torch.double)
+    return 1 / agg_coeffi
 
 
 # def weighted_aggregation(upward_ca_vec):

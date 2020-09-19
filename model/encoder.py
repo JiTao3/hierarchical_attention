@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.getcwd()))
 # print(sys.path)
 
 from util.plan_to_tree import Node, parse_dep_tree_text
-from util.prase_tree2node_leaf import treeInterpolation, upward_ca, tree2NodeLeafmat
+from util.prase_tree2node_leaf import treeInterpolation, upward_ca, tree2NodeLeafmat, weightedAggregationCoeffi
 from util.dataset import PlanDataset
 
 
@@ -81,11 +81,11 @@ class WeightedAggregation(nn.Module):
     def __init__(self, d_feature):
         super(WeightedAggregation, self).__init__()
         # !!!
-        self.u_s = nn.Parameter(torch.ones(d_feature, requires_grad=True))
+        self.u_s = nn.Parameter(torch.rand(d_feature, requires_grad=True))
         self.register_parameter("U_s", self.u_s)
         self.d_featuer = d_feature
 
-    def forward(self, leaf, upward_ca_vec):
+    def forward(self, root, leaf, upward_ca_vec):
         # omega size leaf * d
         omega = torch.matmul(leaf, self.u_s)
         # upward_ca_vec size node * leaf * d
@@ -96,12 +96,17 @@ class WeightedAggregation(nn.Module):
         weighted_aggregation_vec = torch.sum(weighted_aggregation_vec, dim=1)
         # weight_aggregation_vec shape is node*d
 
-        nozero_div = (np.count_nonzero(upward_ca_vec.detach().numpy(), axis=(1, 2)) + 1e-6) / self.d_featuer
-        no_zero = 1 / nozero_div
-        # no_zero_shape =
-        no_zero = torch.from_numpy(no_zero)
+        # upward_ca_vec_cp = copy.copy(upward_ca_vec)
 
-        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(no_zero, 1)
+        # nozero_div = (np.count_nonzero(upward_ca_vec_cp.detach().numpy(), axis=(1, 2)) + 1e-6) / self.d_featuer
+        # no_zero = 1 / nozero_div
+        # # no_zero_shape =
+        # no_zero = torch.from_numpy(no_zero)
+
+        # weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(no_zero, 1)
+
+        div = weightedAggregationCoeffi(root=root)
+        weighted_aggregation_vec = weighted_aggregation_vec * torch.unsqueeze(div, 1)
 
         return weighted_aggregation_vec
 
@@ -134,7 +139,7 @@ class TreeAttention(nn.Module):
         upward_ca_vec = upward_ca(interpolation_vec)
         # upward_ca_tensor = torch.from_numpy(upward_ca_vec)
 
-        node_hat = self.weightAgg(leaf, upward_ca_vec)
+        node_hat = self.weightAgg(root, leaf, upward_ca_vec)
         leaf_hat = leaf_v
 
         # 1)!!! node_hat = ???
@@ -176,7 +181,12 @@ class EncoderLayer(nn.Module):
         self.norm1 = LayerNorm(d_model)
         self.norm2 = LayerNorm(d_model)
         self.feed_forward = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.ReLU(), nn.Linear(d_ff, d_model), nn.ReLU()
+            nn.Linear(d_model, d_ff),
+            nn.ReLU(),
+            nn.Linear(d_ff, d_ff // 2),
+            nn.ReLU(),
+            nn.Linear(d_ff // 2, d_model),
+            nn.ReLU()
         )
 
     def forward(self, root, node, leaf):
@@ -195,24 +205,21 @@ class Encoder(nn.Module):
     def __init__(self, d_feature, d_model, d_ff, N):
         super(Encoder, self).__init__()
         self.reshape = Reshape(d_feature=d_feature, d_model=d_model)
-        # self.firstEncoder = EncoderLayer(d_feature=d_feature, d_model=d_model, d_ff=d_ff)
+        self.firstEncoder = EncoderLayer(d_feature=d_feature, d_model=d_feature, d_ff=d_model)
 
         self.layers = clones(
-            EncoderLayer(d_feature=d_model, d_model=d_model, d_ff=d_ff), N=N
+            EncoderLayer(d_feature=d_model, d_model=d_model, d_ff=d_ff), N=N - 1
         )
         self.forward_net = nn.Sequential(
-            nn.Linear(d_model, d_model // 4),
+            nn.Linear(d_model, 1),
             nn.ReLU(),
-            nn.Linear(d_model // 4, d_model // 8),
-            nn.ReLU(),
-            nn.Linear(d_model // 8, 1),
-            nn.ReLU()
         )
 
     def forward(self, root, node, leaf):
-        node = self.reshape(node)
-        leaf = self.reshape(leaf)
-        # node, leaf = self.firstEncoder(root, node, leaf)
+        # node = self.reshape(node)
+        # leaf = self.reshape(leaf)
+        node, leaf = self.firstEncoder(root, node, leaf)
+        node, leaf = self.reshape(node), self.reshape(leaf)
         for layer in self.layers:
             node, leaf = layer(root, node, leaf)
 
